@@ -1,0 +1,60 @@
+version: "3.9"
+
+#
+# fix the network subnet and btc-node ip to match values
+# in bitcoind.conf file for zmq, rpcbind and rpcallowip
+#
+networks:
+  lnnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+services:
+  btc-node:
+    image: anax32/bitcoind
+    networks:
+      lnnet:
+        ipv4_address: 172.20.0.2
+    ports:
+      - 8332:8332
+      - 8333:8333
+      - 28332:28332
+    logging:
+      options:
+        max-size: "5m"
+        max-file: "3"
+    environment:
+      BITCOIND_TESTNET: 0
+      BITCOIND_REGTEST: 1
+      BITCOIND_PRINTTOCONSOLE: 1
+      BITCOIND_SERVER: 1
+      BITCOIND_RPCUSER: me
+      BITCOIND_RPCPASSWORD: mypassword1
+      BITCOIND_RPCALLOWIP: 0.0.0.0/0
+      BITCOIND_RPCPORT: 18443
+      BITCOIND_COINSTATSINDEX: 1
+      BITCOIND_TXINDEX: 1
+      BITCOIND_ZMQPUBHASHBLOCK_PORT: 28330
+      BITCOIND_ZMQPUBHASHTX_PORT: 28331
+      BITCOIND_ZMQPUBRAWTX_PORT: 28332
+      BITCOIND_ZMQPUBRAWBLOCK_PORT: 28333
+ 
+  ln-node:
+    image: anax32/lnd
+    deploy:
+      replicas: 6
+    networks:
+      - lnnet
+    depends_on:
+      - btc-node
+    ports:
+      - 8080-8086:8080
+    environment:
+      BITCOIN_RPC_HOST: btc-node
+      BITCOIN_RPC_USER: me
+      BITCOIN_RPC_PASS: mypassword1
+      BITCOIN_ZMQ_IP: 172.20.0.2
+      BITCOIN_ZMQ_PUBRAWTX_PORT: 28332
+      BITCOIN_ZMQ_PUBRAWBLOCK_PORT: 28333

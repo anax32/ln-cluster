@@ -9,4 +9,4 @@ COPY config/lnd-env.conf /config/
 WORKDIR /
 ENTRYPOINT ["/bin/bash", "-c"]
 
-CMD ["create-env-conf.sh && cat config/tmp.conf && lnd --lnddir=/data -C=/config/tmp.conf"]
+CMD ["create-env-conf.sh /config/lnd-env.conf /config/tmp.conf && lnd --lnddir=/data -C=/config/tmp.conf"]

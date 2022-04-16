@@ -7,6 +7,8 @@ with settings controlled by environment variables.
 
 ## build
 
+### LND
+
 `LND_VERSION` build arg is the version of the `lnd` container to use as the base image.
 
 ```bash
@@ -14,6 +16,20 @@ docker build \
   -t anax32/lnd:latest \
   -t anax32/lnd:v0.12.0-beta \
   --build-arg LND_VERSION=v0.12.0-beta \
+  -f Dockerfile.lnd \
+  .
+```
+
+### c-lightning
+
+`CLN_VERSION` build arg is the version of `elementsproject/lightningd` container to use as the base image.
+
+```bash
+docker build \
+  -t anax32/cln:latest \
+  -t anax32/cln:v0.10.2 \
+  --build-arg CLN_VERSION=v0.10.2 \
+  -f Dockerfile.clightning \
   .
 ```
 
@@ -21,6 +37,8 @@ docker build \
 
 given a running bitcoin node, connect the lnd container to the node
 with environment variables via:
+
+### LND
 
 ```bash
 docker run \
@@ -35,6 +53,25 @@ docker run \
   -e BITCOIN_ZMQ_PUBRAWTX_PORT=28332 \
   -e BITCOIN_ZMQ_PUBRAWBLOCK_PORT=28333 \
   anax32/lnd
+```
+
+### c-lightning
+
+```bash
+docker run \
+  -d \
+  --rm \
+  --name cln-node \
+  -e BITCOIN_RPC_HOST=btc-node \
+  -e BITCOIN_RPC_USER=me \
+  -e BITCOIN_RPC_PASS=mypassword1 \
+  -e BITCOIN_RPC_PORT=8332 \
+  -e BITCOIN_ZMQ_IP=127.0.0.1 \
+  -e BITCOIN_ZMQ_PUBRAWTX_PORT=28332 \
+  -e BITCOIN_ZMQ_PUBRAWBLOCK_PORT=28333 \
+  -e CLN_NETWORK=regtest \
+  -e CLN_WALLET=sqlite3:///data/regtest/lightningd.sqlite3 \
+  anax32/cln
 ```
 
 ## cluster
